@@ -1,6 +1,7 @@
-# Opticverge Real-Time Index Engineering Demo
+# Opticverge Real-Time Index Engine
 
-Ultra-low-latency index engine in C# — built as a discussion platform for a Technical Lead interview.  
+Low-latency C# market index engine that ingests synthetic exchange ticks, routes them through Kafka-compatible streams, calculates weighted indexes with a Disruptor-based hot path, and exposes live operational views through Aspire services.
+
 The design separates two lanes deliberately:
 
 - **Hot path** — synthetic exchange ticks → partition routing → preallocated Disruptor ring buffer → O(1) incremental weighted index calculation.
@@ -297,7 +298,7 @@ The CQRS approach decouples latency from durability. The engine publishes at nan
 
 **Why:** The same `Confluent.Kafka` client works without modification. Redpanda starts significantly faster in a Docker container (relevant for local dev and the Aspire AppHost startup time). Its thread-per-core architecture gives lower tail latency in single-node scenarios.
 
-**Tradeoff:** not identical to the Kafka you would run in production. Any Kafka-specific admin API (ACLs, quota enforcement, MirrorMaker) would need retesting. Acceptable here because the demo is explicitly a discussion platform, not a production rollout.
+**Tradeoff:** not identical to the Kafka you would run in production. Any Kafka-specific admin API (ACLs, quota enforcement, MirrorMaker) would need retesting before production rollout.
 
 **Alternatives considered:**
 - *Apache Kafka* — production standard but slower local startup, ZooKeeper/KRaft overhead.
