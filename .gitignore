@@ -1,5 +1,8 @@
 .idea
 
+.dotnet-home/
+.tmp/
+
 bin/
 obj/
 /packages/
