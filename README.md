@@ -49,6 +49,8 @@ The Docker-backed AppHost integration test is skipped by default so the normal t
 
 ## System Design
 
+> Defaults in the diagrams below (10 k ticks/sec feed, 1 024-tick snapshot interval) are the Aspire AppHost configuration; the in-code defaults differ (100 k ticks/sec and 16 384 ticks respectively).
+
 ### High-level data flow
 
 ```mermaid
@@ -146,7 +148,7 @@ sequenceDiagram
     participant DB as Postgres
 
     loop every DeltaPublishInterval ticks
-        E->>D: produce IndexValue (JSON)
+        E->>D: produce IndexValue (binary 42 B)
     end
     loop consume
         P->>D: poll 100 ms timeout
@@ -323,7 +325,7 @@ The CQRS approach decouples latency from durability. The engine publishes at nan
 
 > **99.9% of index values are published within 40 ms of the triggering exchange event**, measured at the p99.9 percentile over a rolling 5-minute window.
 
-The SLO is operationalised by the `index.end_to_end.latency` OpenTelemetry histogram (exchange `TimestampNanos` → calculation complete) and the `e2e_latency_p99` CloudWatch alarm defined in [`infra/alarms.tf`](infra/alarms.tf).
+The SLO is operationalised by the `index.end_to_end.latency` OpenTelemetry histogram (exchange `TimestampNanos` → calculation start, sampled once per batch; the calculator step itself is tracked separately by `index.calculation.duration`) and the `e2e_latency_p99` CloudWatch alarm defined in [`infra/alarms.tf`](infra/alarms.tf).
 
 ---
 
@@ -438,7 +440,7 @@ terraform apply -var-file=env/staging.tfvars
 | PERF 2 — right compute model? | Mechanical sympathy: Server GC + SustainedLowLatency; yielding wait strategy; dedicated consumer thread with optional CPU affinity for <1 µs scheduling jitter |
 | PERF 3 — right data stores? | Kafka compacted topic for O(1) snapshot recovery; Postgres for latest-state materialisation (upsert-only, no range queries); ElastiCache / DynamoDB for sub-millisecond query-side reads if needed |
 | PERF 4 — network topology? | AWS Global Accelerator routes consumers to the nearest healthy regional endpoint; authoritative calculation in one region, index delta replication via MSK MirrorMaker 2 to regional brokers |
-| PERF 5 — p99/p99.9 regression testing? | `LatencyHistogram` records p50/p95/p99/p99.9 nanos; BenchmarkDotNet suite guards against regressions on codec, routing, and index math; `EndToEndLatencyP99Alarm` fires in staging on any regression |
+| PERF 5 — p99/p99.9 regression testing? | `LatencyHistogram` records p50/p95/p99/p99.9 nanos; BenchmarkDotNet suite guards against regressions on codec, routing, and index math; `e2e-latency-p99-breach` fires in staging on any regression |
 
 #### Reliability
 
@@ -449,8 +451,8 @@ terraform apply -var-file=env/staging.tfvars
 | REL 7 — demand spikes? | ECS Service Auto Scaling on `consumer-lag` CloudWatch metric; MSK partition count sets the maximum parallelism ceiling |
 | REL 10 — fault isolation? | Index families partitioned across calculator shards; a failed shard only affects its index family; MSK partition ownership isolates feed failures per-partition |
 | REL 11 — node failure? | ECS replaces failed tasks automatically; on restart the engine loads the latest `CalculatorSnapshot` from the compacted topic and replays only the gap — no manual operator intervention |
-| REL 12 — tested failure conditions? | Sequence gap injection, stale-tick injection, and deterministic replay tests exist in `HotPathTests`; chaos testing (kill ECS task, partition network) planned for staging |
-| REL 13 — disaster recovery? | RPO = snapshot interval (default every 1 024 ticks consumed) + gap since last snapshot; RTO = container start time + snapshot load + gap replay; cross-region: MirrorMaker 2 replicates `index.snapshots` to DR region |
+| REL 12 — tested failure conditions? | Sequence gap injection, stale-tick injection, and deterministic replay tests exist in `FailureDrillTests`; chaos testing (kill ECS task, partition network) planned for staging |
+| REL 13 — disaster recovery? | RPO = snapshot interval (default every 1 024 ticks consumed under the AppHost) + gap since last snapshot; RTO = container start time + snapshot load + gap replay; cross-region: MirrorMaker 2 replicates `index.snapshots` to DR region |
 
 #### Operational Excellence
 
@@ -497,7 +499,7 @@ External exchange feeds (TLS)
 
 - IAM roles use **least-privilege**: each service has only the MSK actions it needs.
 - RDS access uses **IAM database authentication** — no embedded passwords.
-- `index.audit` is an **append-only Kafka topic** retained indefinitely; it records every corporate-action mutation with the operator identity, timestamp, and full action payload.
+- `index.audit` is an **append-only Kafka topic** (no compaction) mirroring every corporate-action mutation with the full action payload for compliance and replay; operator identity is not yet captured. Set an explicit long retention in production — the local AppHost applies a broker-wide 1-minute retention.
 - All S3 snapshot archives (if used for long-term DR) are encrypted with SSE-KMS.
 - CloudTrail captures every IAM API call and MSK admin operation.
 
@@ -576,11 +578,13 @@ Additional cost controls:
 |---|---|---|
 | `ticks.raw` | 1 min / 100 MB | Binary-encoded `MarketTick` structs; 4 partitions; instrument-sharded |
 | `ticks.normalized` | 1 min | Reserved for a validated/normalised tick layer |
-| `index.deltas` | 1 min | `IndexValue` JSON; published every `DeltaPublishInterval` ticks consumed |
+| `index.deltas` | 1 min | `IndexValue` binary (42-byte `IndexValueBinaryCodec`); published every `DeltaPublishInterval` ticks consumed |
 | `index.snapshots` | Compacted | `CalculatorSnapshot` JSON; key = indexId; includes per-instrument sequence checkpoints; read on startup for state recovery |
 | `engine.metrics` | 1 min | `EngineMetricsDto` JSON; latency histograms, GC counters, consumer lag |
-| `corporate.actions` | Default | `CorporateAction` JSON; consumed by engine for weight/removal/addition events |
-| `index.audit` | Default | Append-only audit log; mirrors every corporate action for compliance |
+| `corporate.actions` | Default* | `CorporateAction` JSON; consumed by engine for weight/removal/addition events |
+| `index.audit` | Default* | Append-only (no compaction) audit mirror of every corporate action |
+
+*Topics marked `Default` have no explicit retention configured; under the Aspire AppHost the broker-wide retention is 1 min / 100 MB, so audit durability requires an explicit long retention in production.
 
 ---
 
