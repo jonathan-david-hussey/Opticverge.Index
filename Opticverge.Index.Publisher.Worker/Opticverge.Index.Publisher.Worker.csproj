@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>dotnet-Opticverge.Index.Publisher.Worker-26f2d9db-fc29-491f-b528-158583616fa2</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Confluent.Kafka" Version="2.15.0"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.11"/>
+        <PackageReference Include="Npgsql" Version="9.0.3"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Opticverge.Index.Contracts\Opticverge.Index.Contracts.csproj"/>
+        <ProjectReference Include="..\Opticverge.Index.Engine\Opticverge.Index.Engine.csproj"/>
+        <ProjectReference Include="..\Opticverge.Index.ServiceDefaults\Opticverge.Index.ServiceDefaults.csproj"/>
+    </ItemGroup>
+</Project>
