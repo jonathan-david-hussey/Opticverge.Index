@@ -24,4 +24,11 @@
         <Using Include="Xunit"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\Opticverge.Index.Contracts\Opticverge.Index.Contracts.csproj"/>
+        <ProjectReference Include="..\Opticverge.Index.Engine\Opticverge.Index.Engine.csproj"/>
+        <ProjectReference Include="..\Opticverge.Index.FeedSimulator\Opticverge.Index.FeedSimulator.csproj"/>
+        <ProjectReference Include="..\Opticverge.Index.AppHost\Opticverge.Index.AppHost.csproj"/>
+    </ItemGroup>
+
 </Project>
