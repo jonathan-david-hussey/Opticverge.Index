@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>dotnet-Opticverge.Index.IndexEngine.Worker-1701be2f-01ce-43fb-ae4b-a15c834e921a</UserSecretsId>
+        <ServerGarbageCollection>true</ServerGarbageCollection>
+        <GarbageCollectionAdaptationMode>0</GarbageCollectionAdaptationMode>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Confluent.Kafka" Version="2.15.0"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.11"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Opticverge.Index.Contracts\Opticverge.Index.Contracts.csproj"/>
+        <ProjectReference Include="..\Opticverge.Index.Engine\Opticverge.Index.Engine.csproj"/>
+        <ProjectReference Include="..\Opticverge.Index.ServiceDefaults\Opticverge.Index.ServiceDefaults.csproj"/>
+    </ItemGroup>
+</Project>
