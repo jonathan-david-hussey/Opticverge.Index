@@ -1,0 +1,10 @@
+<Project>
+    <PropertyGroup>
+        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+        <ServerGarbageCollection>true</ServerGarbageCollection>
+        <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
+        <TieredCompilation>true</TieredCompilation>
+        <TieredPGO>true</TieredPGO>
+        <InvariantGlobalization>true</InvariantGlobalization>
+    </PropertyGroup>
+</Project>
