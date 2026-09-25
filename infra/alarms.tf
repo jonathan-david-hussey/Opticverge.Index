@@ -29,7 +29,8 @@ locals {
 }
 
 # ── SLO: p99 end-to-end latency > 40 ms ──────────────────────────────────────
-# Exchange timestamp → index calculation complete.
+# Exchange timestamp → index calculation start (batch sample; the calculator
+# step itself is tracked separately via index.calculation.duration).
 # Breaching this is a direct SLO violation.
 resource "aws_cloudwatch_metric_alarm" "e2e_latency_p99" {
   alarm_name          = "${var.service_name}-e2e-latency-p99-breach"
@@ -48,7 +49,7 @@ resource "aws_cloudwatch_metric_alarm" "e2e_latency_p99" {
 }
 
 # ── p99 ring-buffer processing latency > 5 ms ────────────────────────────────
-# Receive timestamp → calculation complete. Leading indicator for the SLO alarm.
+# Receive timestamp → calculation start (batch sample). Leading indicator for the SLO alarm.
 resource "aws_cloudwatch_metric_alarm" "processing_latency_p99" {
   alarm_name          = "${var.service_name}-processing-latency-p99"
   alarm_description   = "p99 ring-buffer processing latency exceeded 5 ms — leading SLO indicator. Investigate wait strategy, CPU affinity, and GC."

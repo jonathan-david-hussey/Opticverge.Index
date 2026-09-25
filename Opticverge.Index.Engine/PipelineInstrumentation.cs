@@ -26,7 +26,7 @@ public sealed class PipelineInstrumentation : IDisposable
             "Ingest-to-calculate latency: receive timestamp to WeightedIndexCalculator.Apply start");
         metrics.OtelEndToEndLatency = _meter.CreateHistogram<long>(
             "index.end_to_end.latency", "ns",
-            "End-to-end latency: exchange timestamp to index calculation completion");
+            "End-to-end latency: exchange timestamp to index calculation start (sampled once per batch)");
         metrics.OtelCalcDuration = _meter.CreateHistogram<long>(
             "index.calculation.duration", "ns",
             "WeightedIndexCalculator.Apply duration (stateful-calculator stage, slide 19 stage 7)");
