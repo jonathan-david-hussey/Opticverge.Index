@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Sdk Name="Aspire.AppHost.Sdk" Version="13.5.3"/>
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AspireUseCliBundle>true</AspireUseCliBundle>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Aspire.Hosting" Version="13.5.3"/>
+        <PackageReference Include="Aspire.Hosting.AppHost" Version="13.5.3"/>
+        <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.5.3"/>
+        <PackageReference Include="CommunityToolkit.Aspire.Hosting.RedPanda" Version="13.5.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Opticverge.Index.Ingestion.Worker\Opticverge.Index.Ingestion.Worker.csproj" IsAspireProjectResource="true"/>
+        <ProjectReference Include="..\Opticverge.Index.IndexEngine.Worker\Opticverge.Index.IndexEngine.Worker.csproj" IsAspireProjectResource="true"/>
+        <ProjectReference Include="..\Opticverge.Index.Publisher.Worker\Opticverge.Index.Publisher.Worker.csproj" IsAspireProjectResource="true"/>
+        <ProjectReference Include="..\Opticverge.Index.Query.Api\Opticverge.Index.Query.Api.csproj" IsAspireProjectResource="true"/>
+        <ProjectReference Include="..\Opticverge.Index.Ops.Web\Opticverge.Index.Ops.Web.csproj" IsAspireProjectResource="true"/>
+    </ItemGroup>
+
+</Project>
