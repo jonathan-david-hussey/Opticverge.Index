@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <ItemGroup>
+        <ProjectReference Include="..\Opticverge.Index.Contracts\Opticverge.Index.Contracts.csproj"/>
+        <ProjectReference Include="..\Opticverge.Index.ServiceDefaults\Opticverge.Index.ServiceDefaults.csproj"/>
+        <ProjectReference Include="..\Opticverge.Index.Engine\Opticverge.Index.Engine.csproj"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+</Project>
